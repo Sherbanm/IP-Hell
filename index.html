@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css" />
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+	<script src="app.js"></script>
+	<script src="core.js"></script>
+</head>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl">
+	<div id="header">
+		<form method="post" action="/addLinuxIp">
+			<input type="text" name="linuxIp" id="linuxIp" />
+			<input type="submit" value="linux" />
+		</form>
+		<form method="post" action="/addWindowsIp">
+			<input type="text" name="windowsIp" id="windowIp" />
+			<input type="submit" value="windows" />
+		</form>
+		linuxHostList
+		<ul ng-repeat="hostList in linuxHostList">
+			<li>{{hostList}}</li>
+		</ul>
+		windowsHostList
+		<ul ng-repeat="hostList in windowsHostList">
+			<li>{{hostList}}</li>
+		</ul>
+	</div>
+	<div id="container">
+		<div id="left">
+			<img src="photo/local.jpeg" height="50" width="50">
+			<table>
+				<tr>
+					<th>Interface</th>
+					<th>Alias</th>
+					<th>Address</th>
+				</tr>
+				<tr ng-repeat="ip in localIp">	
+					<td> {{ip.ifname}} </td>
+					<td> {{ip.alias}} </td>
+					<td> {{ip.address}} </td>
+				</tr>
+			</table>
+		</div>
+		<div id="right" ng-repeat="ipList in remoteWindowsIp">
+			<img src="photo/windows.png" height="50" width="50">
+			<table>
+				<tr>
+					<th>Interface</th>
+					<th>Alias</th>
+					<th>Address</th>
+				</tr>
+				<tr ng-repeat="i in remoteWindowsIpRange">
+					<td> {{ipList[i].ifname}} </td>
+					<td> {{ipList[i].alias}} </td>
+					<td> {{ipList[i].address}} </td>
+				</tr>
+			</table>
+		</div>
+		<div id="center" ng-repeat="ipList in remoteLinuxIp">
+			<img src="photo/linux.png" height="50" width="50">
+			<table >
+				<tr>
+					<th>Interface</th>
+					<th>Alias</th>
+					<th>Address</th>
+				</tr>
+				<tr ng-repeat="i in remoteLinuxIpRange">
+					<td> {{ipList[i].ifname}} </td>
+					<td> {{ipList[i].alias}} </td>
+					<td> {{ipList[i].address}} </td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope, $http, $interval) {
+    loadLocalIp();
+	loadRemoteWindowsIp();
+	loadRemoteLinuxIp();
+	loadWindowsHosts();
+	loadLinuxHosts();
+	$interval(function(){
+		loadLocalIp();
+		loadRemoteWindowsIp();
+		loadRemoteLinuxIp();
+		loadWindowsHosts();
+		loadLinuxHosts();
+	},3000);
+	function loadLocalIp() {
+		$http.get('http://localhost:3000/loadLocalIp').success(function(data) {
+			$scope.localIp = data;
+		});
+	};
+	function loadLinuxHosts() {
+		$http.get('http://localhost:3000/loadLinuxHosts').success(function(data) {
+			$scope.linuxHostList = data;
+		});
+	};
+	function loadRemoteWindowsIp() {
+		$http.get('http://localhost:3000/loadRemoteWindowsIp').success(function(data) {
+			$scope.remoteWindowsIp = data;
+			var range = [];
+			for(var i=0;i<data.length;i++) {
+				range.push(i);
+			}
+			$scope.remoteWindowsIpRange = range;
+		});
+	};
+	function loadRemoteLinuxIp() {
+		$http.get('http://localhost:3000/loadRemoteLinuxIp').success(function(data) {
+			$scope.remoteLinuxIp = data;
+			var range = [];
+			for(var i=0;i<data.length;i++) {
+				range.push(i);
+			}
+			$scope.remoteLinuxIpRange = range;
+		});
+	};
+	function loadWindowsHosts() {
+		$http.get('http://localhost:3000/loadWindowsHosts').success(function(data) {
+			$scope.windowsHostList = data;
+		});
+	};
+	
+});
+
+
+</script>
+
+
+</body>
+</html>
